@@ -90,10 +90,18 @@ jobs:
         run: |
           npm install
           npm test
+      - name: Validar Secret SONAR_TOKEN
+        run: |
+          if [ -z "${{ secrets.SONAR_TOKEN }}" ] && [ -z "${{ secrets.SONARCLOUD_TOKEN }}" ]; then
+            echo "::error::El secret SONAR_TOKEN no existe o está vacío en GitHub Repository Secrets (Settings -> Secrets and variables -> Actions)."
+            exit 1
+          fi
+          echo "Secret SONAR_TOKEN detectado correctamente."
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@v4
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN || secrets.SONARCLOUD_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'https://sonarcloud.io' }}
  
   terraform-deploy:
